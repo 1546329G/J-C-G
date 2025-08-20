@@ -1,55 +1,57 @@
 package com.example.guardia
-
+// importamos las librerias necesarias
 import android.os.Bundle
-import android.os.Looper
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-// Asegúrate de tener un tema de Compose, por ejemplo, en ui.theme.YourAppTheme
-import com.example.guardia.ui.theme.GuardiaTheme // Ajusta esto a tu tema real
+import com.example.guardia.ui.theme.GuardiaTheme
+import kotlinx.coroutines.launch
 
-class RegisterActivity : ComponentActivity() {
+class RegisterActivity : ComponentActivity() { // clase para registrarse
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            GuardiaTheme { // Aplica tu tema de Compose
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    RegisterScreen(onNavigateBack = { finish() }) // Llama a finish() para volver
+            GuardiaTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    RegisterScreen(onNavigateBack = { finish() })
                 }
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class) // Para componentes de Material 3
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(onNavigateBack: () -> Unit) {
-    var username by remember { mutableStateOf("") }
+fun RegisterScreen(onNavigateBack: () -> Unit) { // funcion para registrarse
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
-    Scaffold(
+    Scaffold( // scaffold para registrarse
         topBar = {
             TopAppBar(
-                title = { Text("Crear Cuenta") },
+                title = { Text("Crear cuenta") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Volver atrás")
@@ -58,34 +60,32 @@ fun RegisterScreen(onNavigateBack: () -> Unit) {
             )
         }
     ) { paddingValues ->
-        Column(
+        Column( // columna para registrarse
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues) // Aplicar el padding del Scaffold
-                .padding(horizontal = 32.dp), // Padding horizontal adicional
+                .padding(paddingValues)
+                .padding(horizontal = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            OutlinedTextField(
-                value = username,
-                onValueChange = { username = it.trim() },
-                label = { Text("Nombre de Usuario") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+            // Imagen de logo
+            Image(
+                painter = painterResource(id = R.drawable.seg),
+                contentDescription = "Logo de la aplicación",
+                modifier = Modifier.padding(bottom = 32.dp)
             )
-            Spacer(modifier = Modifier.height(16.dp))
 
-            OutlinedTextField(
+            OutlinedTextField( // campos para registrarse
                 value = email,
                 onValueChange = { email = it.trim() },
-                label = { Text("Correo Electrónico") },
+                label = { Text("Correo electrónico") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 singleLine = true
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp)) // espacio entre campos
 
-            OutlinedTextField(
+            OutlinedTextField( // campos para registrarse
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Contraseña") },
@@ -94,12 +94,12 @@ fun RegisterScreen(onNavigateBack: () -> Unit) {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 singleLine = true
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp)) // espacio entre campos julio lee bien te toy explicando
 
-            OutlinedTextField(
+            OutlinedTextField( // campos para registrarse
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
-                label = { Text("Confirmar Contraseña") },
+                label = { Text("Confirmar contraseña") },
                 modifier = Modifier.fillMaxWidth(),
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -107,56 +107,62 @@ fun RegisterScreen(onNavigateBack: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(32.dp))
 
-            Button(
+            Button( // boton para registrarse
                 onClick = {
-                    if (username.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
+                    if (email.isBlank() || password.isBlank() || confirmPassword.isBlank()) { // si esta vacio se muestra un mensaje
                         Toast.makeText(context, "Todos los campos son obligatorios", Toast.LENGTH_LONG).show()
                         return@Button
                     }
                     if (password != confirmPassword) {
-                        Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_LONG).show() // si las contraseñas no coinciden se muestra un mensaje
                         return@Button
                     }
-                    // Validar formato de email (simple)
                     if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                         Toast.makeText(context, "Formato de correo inválido", Toast.LENGTH_LONG).show()
                         return@Button
                     }
-                    // Validar longitud de contraseña (ejemplo)
                     if (password.length < 6) {
                         Toast.makeText(context, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_LONG).show()
                         return@Button
                     }
 
+                    isLoading = true // si esta cargando se muestra un circulo de progreso
+                    coroutineScope.launch {
+                        val errorMessage = registerUser(
+                            correo = email,
+                            contrasena = password,
+                            rol = "alumno"
+                        )
+                        isLoading = false // si no esta cargando se oculta el circulo de progreso
 
-                    isLoading = true
-                    // --- Lógica de Registro (Simulada) ---
-                    android.os.Handler(Looper.getMainLooper()).postDelayed({
-                        isLoading = false
-                        // En una app real, aquí llamarías a tu backend o Firebase Auth para registrar al usuario
-                        Toast.makeText(context, "¡Registro exitoso! (Simulado)", Toast.LENGTH_SHORT).show()
-                        // Podrías navegar al login o directamente a la app
-                        // Ejemplo: volver al Login (o cerrar y que LoginActivity esté debajo)
-                        onNavigateBack() // Esto llamará a finish() en RegisterActivity
-                    }, 1500)
+                        if (errorMessage == null) {
+                            Toast.makeText(context, "Registro exitoso", Toast.LENGTH_LONG).show()
+                            onNavigateBack()
+                        } else {
+                            Toast.makeText(context, "Error: $errorMessage", Toast.LENGTH_LONG).show()
+                        }
+                    }
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(), // boton para registrarse
                 enabled = !isLoading,
                 contentPadding = PaddingValues(vertical = 16.dp)
             ) {
-                if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
+                if (isLoading) { // si esta cargando se muestra un circulo de progreso
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
                 } else {
-                    Text("Registrar")
+                    Text("Registrarse")// boton para registrarse julio presta atencion
                 }
             }
         }
     }
 }
 
-@Preview(showBackground = true, name = "Register Screen Preview")
+@Preview(showBackground = true, name = "Vista previa de registro") // vista previa de registro
 @Composable
-fun RegisterScreenPreview() {
+fun RegisterScreenPreview() {// vista previa de registro
     GuardiaTheme {
         RegisterScreen(onNavigateBack = {})
     }
