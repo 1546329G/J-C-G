@@ -21,8 +21,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.guardia.ui.theme.GuardiaTheme
 import kotlinx.coroutines.launch
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
-class RegisterActivity : ComponentActivity() { // clase para registrarse
+class RegisterActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -40,7 +42,7 @@ class RegisterActivity : ComponentActivity() { // clase para registrarse
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(onNavigateBack: () -> Unit) { // funcion para registrarse
+fun RegisterScreen(onNavigateBack: () -> Unit) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -48,7 +50,7 @@ fun RegisterScreen(onNavigateBack: () -> Unit) { // funcion para registrarse
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    Scaffold( // scaffold para registrarse
+    Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Crear cuenta") },
@@ -60,7 +62,7 @@ fun RegisterScreen(onNavigateBack: () -> Unit) { // funcion para registrarse
             )
         }
     ) { paddingValues ->
-        Column( // columna para registrarse
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
@@ -68,14 +70,13 @@ fun RegisterScreen(onNavigateBack: () -> Unit) { // funcion para registrarse
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Imagen de logo
             Image(
                 painter = painterResource(id = R.drawable.seg),
                 contentDescription = "Logo de la aplicación",
                 modifier = Modifier.padding(bottom = 32.dp)
             )
 
-            OutlinedTextField( // campos para registrarse
+            OutlinedTextField(
                 value = email,
                 onValueChange = { email = it.trim() },
                 label = { Text("Correo electrónico") },
@@ -83,9 +84,9 @@ fun RegisterScreen(onNavigateBack: () -> Unit) { // funcion para registrarse
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 singleLine = true
             )
-            Spacer(modifier = Modifier.height(16.dp)) // espacio entre campos
+            Spacer(modifier = Modifier.height(16.dp))
 
-            OutlinedTextField( // campos para registrarse
+            OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Contraseña") },
@@ -94,9 +95,9 @@ fun RegisterScreen(onNavigateBack: () -> Unit) { // funcion para registrarse
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 singleLine = true
             )
-            Spacer(modifier = Modifier.height(16.dp)) // espacio entre campos julio lee bien te toy explicando
+            Spacer(modifier = Modifier.height(16.dp))
 
-            OutlinedTextField( // campos para registrarse
+            OutlinedTextField(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
                 label = { Text("Confirmar contraseña") },
@@ -107,14 +108,14 @@ fun RegisterScreen(onNavigateBack: () -> Unit) { // funcion para registrarse
             )
             Spacer(modifier = Modifier.height(32.dp))
 
-            Button( // boton para registrarse
+            Button(
                 onClick = {
-                    if (email.isBlank() || password.isBlank() || confirmPassword.isBlank()) { // si esta vacio se muestra un mensaje
+                    if (email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
                         Toast.makeText(context, "Todos los campos son obligatorios", Toast.LENGTH_LONG).show()
                         return@Button
                     }
                     if (password != confirmPassword) {
-                        Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_LONG).show() // si las contraseñas no coinciden se muestra un mensaje
+                        Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_LONG).show()
                         return@Button
                     }
                     if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
@@ -126,14 +127,14 @@ fun RegisterScreen(onNavigateBack: () -> Unit) { // funcion para registrarse
                         return@Button
                     }
 
-                    isLoading = true // si esta cargando se muestra un circulo de progreso
+                    isLoading = true
                     coroutineScope.launch {
                         val errorMessage = registerUser(
                             correo = email,
                             contrasena = password,
                             rol = "alumno"
                         )
-                        isLoading = false // si no esta cargando se oculta el circulo de progreso
+                        isLoading = false
 
                         if (errorMessage == null) {
                             Toast.makeText(context, "Registro exitoso", Toast.LENGTH_LONG).show()
@@ -143,27 +144,54 @@ fun RegisterScreen(onNavigateBack: () -> Unit) { // funcion para registrarse
                         }
                     }
                 },
-                modifier = Modifier.fillMaxWidth(), // boton para registrarse
+                modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoading,
                 contentPadding = PaddingValues(vertical = 16.dp)
             ) {
-                if (isLoading) { // si esta cargando se muestra un circulo de progreso
+                if (isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text("Registrarse")// boton para registrarse julio presta atencion
+                    Text("Registrarse")
                 }
             }
         }
     }
 }
 
-@Preview(showBackground = true, name = "Vista previa de registro") // vista previa de registro
+@Preview(showBackground = true, name = "Vista previa de registro")
 @Composable
-fun RegisterScreenPreview() {// vista previa de registro
+fun RegisterScreenPreview() {
     GuardiaTheme {
         RegisterScreen(onNavigateBack = {})
+    }
+}
+
+
+suspend fun registerUser(
+    correo: String,
+    contrasena: String,
+    rol: String
+): String? {
+    val retrofit = Retrofit.Builder()
+        .baseUrl("https://j-c-g.apis-s.site/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    val apiService = retrofit.create(ApiService::class.java)
+
+    return try {
+        val response = apiService.register(
+            RegisterRequest(email = correo, contrasena = contrasena, rol = rol)
+        )
+        if (response.isSuccessful && response.body()?.success == true) {
+            null
+        } else {
+            response.body()?.message ?: "Error al registrarse"
+        }
+    } catch (e: Exception) {
+        "Error de red: ${e.message}"
     }
 }

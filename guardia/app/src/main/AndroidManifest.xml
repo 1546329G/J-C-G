@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -10,7 +12,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Guardia">
+        android:theme="@style/Theme.Guardia"
+        android:usesCleartextTraffic="true">
 
         <activity
             android:name=".MainActivity"
@@ -23,26 +26,15 @@
             </intent-filter>
         </activity>
 
-        <!-- AÑADIR ESTAS DECLARACIONES DE ACTIVITY -->
         <activity
             android:name=".LoginActivity"
             android:label="Iniciar Sesión"
             android:theme="@style/Theme.Guardia" />
-        <!-- android:exported="false" es el valor por defecto si no hay intent-filter,
-             lo que es seguro si solo se lanza desde tu propia app. -->
 
         <activity
             android:name=".RegisterActivity"
             android:label="Crear Cuenta"
             android:theme="@style/Theme.Guardia" />
-        <!-- android:exported="false" es el valor por defecto. -->
-
-        <!-- Si tienes una HomeActivity o similar después del login, también declárala:
-        <activity
-            android:name=".HomeActivity"
-            android:label="Inicio"
-            android:theme="@style/Theme.Guardia" />
-        -->
 
     </application>
 
