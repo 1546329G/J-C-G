@@ -1,0 +1,17 @@
+# Archivos y carpetas de Android Studio
+.idea/
+*.iml
+
+# Carpetas de Gradle y builds
+.gradle/
+guardia/caches/
+build/
+captures/
+
+# Configuración local
+local.properties
+
+# Archivos del sistema
+*.log
+.DS_Store
+Thumbs.db
